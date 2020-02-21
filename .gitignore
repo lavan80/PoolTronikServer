@@ -1,0 +1,10 @@
+/.idea/
+/src/main/java/com/pool/tronik/utils/PushParams.java
+*.iml
+*.iws
+/token.txt
+# Mac
+/.DS_Store
+# IntelliJ
+out/
+/target/
