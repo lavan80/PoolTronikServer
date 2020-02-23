@@ -2,7 +2,7 @@ package com.pool.tronik.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.pool.tronik.dataRequests.MScheduleData;
+import com.pool.tronik.dataRequests.PTScheduleDate;
 import com.pool.tronik.dataRequests.PushEntity;
 
 import java.io.FileNotFoundException;
@@ -68,7 +68,7 @@ public class FileUtil {
         return list;
     }
 
-    public static void saveScheduledDate(MScheduleData mScheduleData) {
+    public static void saveScheduledDate(PTScheduleDate mScheduleData) {
         Gson gson = new Gson();
         String file;
         if (mScheduleData.getStatus() == StaticVariables.STATUS_OFF)
