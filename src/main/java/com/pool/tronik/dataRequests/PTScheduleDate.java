@@ -1,16 +1,17 @@
 package com.pool.tronik.dataRequests;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Created by andreivasilevitsky on 16/06/2019.
  */
 public class PTScheduleDate implements Serializable{
     private int relay;
-    private int status;// off / on
+    private int status;// off, on, remove
     private String startDate;
     private String nextDate;
-    private boolean isAlways;
+    private int duration;
     private int iteration;
 
     public int getRelay() {
@@ -45,12 +46,12 @@ public class PTScheduleDate implements Serializable{
         this.nextDate = nextDate;
     }
 
-    public boolean isAlways() {
-        return isAlways;
+    public int getDuration() {
+        return duration;
     }
 
-    public void setAlways(boolean always) {
-        isAlways = always;
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
     public int getIteration() {
@@ -59,5 +60,23 @@ public class PTScheduleDate implements Serializable{
 
     public void setIteration(int iteration) {
         this.iteration = iteration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PTScheduleDate that = (PTScheduleDate) o;
+        return relay == that.relay &&
+                status == that.status &&
+                duration == that.duration &&
+                iteration == that.iteration &&
+                startDate.equals(that.startDate) &&
+                nextDate.equals(that.nextDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(relay, status, startDate, nextDate, duration, iteration);
     }
 }

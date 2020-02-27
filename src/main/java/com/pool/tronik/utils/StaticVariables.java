@@ -9,4 +9,12 @@ public class StaticVariables {
 
     public static final String PLATFORM_IOS = "ios";
     public static final String PLATFORM_ANDROID = "android";
+
+    public enum ScheduleStatus {
+        ON, OFF, REMOVE
+    }
+
+    public enum DurationStatus {
+        ALWAYS, ITERATION
+    }
 }

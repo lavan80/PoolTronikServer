@@ -11,10 +11,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
         basePackageClasses={ThreadPoolTaskSchedulerImpl.class})
 public class ThreadPoolTaskSchedulerConfig {
 
-    public ThreadPoolTaskSchedulerConfig() {
-        System.out.println("Ctr "+ThreadPoolTaskSchedulerConfig.class.getSimpleName());
-    }
-
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();

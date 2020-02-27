@@ -8,3 +8,5 @@
 # IntelliJ
 out/
 /target/
+/src/main/resources/application
+/src/main/java/com/pool/tronik/DatasourceConfig.java

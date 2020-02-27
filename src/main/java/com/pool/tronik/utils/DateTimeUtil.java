@@ -31,4 +31,10 @@ public class DateTimeUtil {
         difference = period.toStandardSeconds().getSeconds()*1000;
         return difference;
     }
+
+    public static LocalDateTime createLocalDateTime(String date) {
+        LocalDateTime localDateTime = new LocalDateTime(date);
+        //DateTime customDateTimeFromString = new DateTime("2018-05-05T10:11:12.123");
+        return localDateTime;
+    }
 }

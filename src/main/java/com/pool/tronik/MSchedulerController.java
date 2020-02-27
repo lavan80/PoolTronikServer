@@ -1,5 +1,6 @@
 package com.pool.tronik;
 
+import com.pool.tronik.dataRequests.PTScheduleDate;
 import com.pool.tronik.utils.DateTimeUtil;
 import org.joda.time.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,35 @@ public class MSchedulerController {
     @Autowired
     ThreadPoolTaskSchedulerImpl threadPoolTaskScheduler;
 
+
+    private PTScheduleDate ptScheduleDate = new PTScheduleDate();
+
+    int count = 0;
+
     @GetMapping
     public Boolean schedule(/*MScheduleData mScheduleData*/) {
+
+        if (count == 0 ) {
+            LocalDateTime start = LocalDateTime.now();
+            start = start.plusSeconds(30);
+            LocalDateTime next = new LocalDateTime(start);
+            next = next.plusSeconds(120);
+            ptScheduleDate.setStartDate(start.toString());
+            ptScheduleDate.setNextDate(next.toString());
+            count++;
+        }
+        else {
+            PTScheduleDate tmp = new PTScheduleDate();
+            tmp.setStatus(2);
+            tmp.setStartDate(ptScheduleDate.getStartDate());
+            tmp.setNextDate(ptScheduleDate.getNextDate());
+            ptScheduleDate = tmp;
+        }
+        threadPoolTaskScheduler.scheduleRunnableWithCronTrigger(ptScheduleDate);
+        return true;
+    }
+
+    private void test() {
         LocalDateTime currentDateAndTime = LocalDateTime.now();
         System.out.println("LocalDateTime Date = "+currentDateAndTime.toString());
         //LocalTime currentTime = currentDateAndTime.toLocalTime();//LocalTime.now();
@@ -42,7 +70,5 @@ public class MSchedulerController {
             }
         });
         thread.start();
-        //threadPoolTaskScheduler.scheduleRunnableWithCronTrigger();
-        return true;
     }
 }
