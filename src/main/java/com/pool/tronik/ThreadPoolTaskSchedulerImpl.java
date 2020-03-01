@@ -1,11 +1,10 @@
 package com.pool.tronik;
 
+import com.pool.tronik.client.RestClient;
 import com.pool.tronik.dataRequests.PTScheduleDate;
 import com.pool.tronik.database.PoolTronickRepository;
 import com.pool.tronik.database.ScheduleEntity;
-import com.pool.tronik.utils.DateTimeUtil;
-import com.pool.tronik.utils.MapUtils;
-import com.pool.tronik.utils.StaticVariables;
+import com.pool.tronik.utils.*;
 import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -24,6 +23,8 @@ public class ThreadPoolTaskSchedulerImpl {
     private ThreadPoolTaskScheduler taskScheduler;
     @Autowired
     private PoolTronickRepository poolTronickRepository;
+    @Autowired
+    private RestClient restClient;
 
     private Map<ScheduledFuture, ScheduleEntity> scheduleDateMap;
 
@@ -32,6 +33,11 @@ public class ThreadPoolTaskSchedulerImpl {
     }
 
     public void scheduleRunnableWithCronTrigger(PTScheduleDate ptScheduleDate) {
+
+        if (true) {
+            restClient.changeStatus(RelayOn.RELAY1);
+            return;
+        }
 
         ScheduleEntity scheduleEntity = MapUtils.mapToScheduleEntity(ptScheduleDate);
         if (isExists(scheduleEntity))
