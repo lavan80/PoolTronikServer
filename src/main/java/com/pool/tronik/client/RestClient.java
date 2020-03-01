@@ -23,10 +23,8 @@ public class RestClient {
        // headers.setContentType(MediaType.APPLICATION_JSON);
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(uri, String.class);
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
-            System.out.print("code = "+ responseEntity.getStatusCode());
+            String result = responseEntity.getBody();//restTemplate.getForObject(uri, String.class);
+            System.out.print(result);
         }
-
-        String result = responseEntity.getBody();//restTemplate.getForObject(uri, String.class);
-        System.out.print(result);
     }
 }

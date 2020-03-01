@@ -34,11 +34,6 @@ public class ThreadPoolTaskSchedulerImpl {
 
     public void scheduleRunnableWithCronTrigger(PTScheduleDate ptScheduleDate) {
 
-        if (true) {
-            restClient.changeStatus(RelayOn.RELAY1);
-            return;
-        }
-
         ScheduleEntity scheduleEntity = MapUtils.mapToScheduleEntity(ptScheduleDate);
         if (isExists(scheduleEntity))
             return;
@@ -155,9 +150,27 @@ public class ThreadPoolTaskSchedulerImpl {
                 poolTronickRepository.save(scheduleEntity);
             }
             System.out.println(LocalDateTime.now().toString());
-            ScheduleEntity s = poolTronickRepository.getOne(scheduleEntity.getId());
+            ScheduleEntity s = poolTronickRepository.getOne(scheduleEntity.getId());//FOT TEST ONLY
             System.out.println("ScheduleEntity id = "+s.toString());
+            if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.OFF.ordinal()) {
+                RelayConfig.RelayOff [] relayOffs = RelayConfig.RelayOff.values();
+                if (scheduleEntity.getRelay() >= 0 && scheduleEntity.getRelay() < relayOffs.length) {
+                    String val = RelayConfig.RelayOff.values()[scheduleEntity.getRelay()].getValue();
+                    restClient.changeStatus(val);
+                }
+            }
+            else if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.ON.ordinal()) {
+                RelayConfig.RelayOn [] relayOns = RelayConfig.RelayOn.values();
+                if (scheduleEntity.getRelay() >= 0 && scheduleEntity.getRelay() < relayOns.length) {
+                    String val = RelayConfig.RelayOn.values()[scheduleEntity.getRelay()].getValue();
+                    restClient.changeStatus(val);
+                }
+            }
+            else if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.REMOVE.ordinal()){
+                removeScheduledTask(scheduleEntity);
+            }
         }
+
     }
 
     private void test() {
