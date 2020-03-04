@@ -4,6 +4,9 @@ import org.joda.time.Duration;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Period;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DateTimeUtil {
 
     /**
@@ -36,5 +39,27 @@ public class DateTimeUtil {
         LocalDateTime localDateTime = new LocalDateTime(date);
         //DateTime customDateTimeFromString = new DateTime("2018-05-05T10:11:12.123");
         return localDateTime;
+    }
+
+    public static List<String> makeNextDatesFromDateAndRepetition(LocalDateTime startDate, List<Integer> repetitionList) {
+        List<String> nextDateList = new ArrayList<>();
+        int startDay = startDate.getDayOfWeek();
+        for (Integer day : repetitionList) {
+            if (startDay > day) {
+                int step = (7 - startDay) + day;
+                String date = startDate.plusDays(step).toString();
+                nextDateList.add(date);
+            }
+            else if (startDay < day) {
+                int step = day - startDay ;
+                String date = startDate.plusDays(step).toString();
+                nextDateList.add(date);
+            }
+            else {
+                String date = startDate.plusDays(7).toString();
+                nextDateList.add(date);
+            }
+        }
+        return nextDateList;
     }
 }

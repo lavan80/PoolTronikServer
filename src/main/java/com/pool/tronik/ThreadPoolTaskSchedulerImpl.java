@@ -31,13 +31,29 @@ public class ThreadPoolTaskSchedulerImpl {
     public ThreadPoolTaskSchedulerImpl() {
         scheduleDateMap = new HashMap<>();
     }
+    @PostConstruct
+    public void init() {
+        List<ScheduleEntity> dateList = poolTronickRepository.findAll();
+        restoreScheduled(dateList);
+    }
 
-    public void scheduleRunnableWithCronTrigger(PTScheduleDate ptScheduleDate) {
+    public void scheduleRunnableAtFixedRate(PTScheduleDate ptScheduleDate) {
 
         ScheduleEntity scheduleEntity = MapUtils.mapToScheduleEntity(ptScheduleDate);
         if (isExists(scheduleEntity))
             return;
-        Map<ScheduledFuture, ScheduleEntity> map = getScheduledItem(scheduleEntity);
+        if (!handleExistsTask(scheduleEntity)) {
+            LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
+            LocalDateTime next = DateTimeUtil.createLocalDateTime(scheduleEntity.getNextDate());
+            System.out.println("ThreadPoolTaskSchedulerImpl from = "+from.toString()+"; next = "+next.toString());
+            System.out.println("ThreadPoolTaskSchedulerImpl duration = "+DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
+            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
+                    from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
+            scheduleDateMap.put(scheduledFuture, entity);
+        }
+        /*Map<ScheduledFuture, ScheduleEntity> map = getScheduledItem(scheduleEntity);
+
         if (!map.isEmpty()) {
             ScheduledFuture scheduledFuture = map.keySet().iterator().next();
             if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.REMOVE.ordinal()) {
@@ -63,13 +79,42 @@ public class ThreadPoolTaskSchedulerImpl {
             ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
                     from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
             scheduleDateMap.put(scheduledFuture, entity);
+        }*/
+    }
+
+    public void scheduleOneTimeTask(PTScheduleDate ptScheduleDate) {
+        ScheduleEntity scheduleEntity = MapUtils.mapToScheduleEntity(ptScheduleDate);
+        if (isExists(scheduleEntity))
+            return;
+        if (!handleExistsTask(scheduleEntity)) {
+            LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
+            System.out.println("scheduleOneTimeTask date = "+from.toString());
+            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
+            scheduleDateMap.put(scheduledFuture, entity);
         }
     }
 
-    @PostConstruct
-    public void init() {
-        List<ScheduleEntity> dateList = poolTronickRepository.findAll();
-        restoreScheduled(dateList);
+    public boolean handleExistsTask(ScheduleEntity scheduleEntity) {
+        Map<ScheduledFuture, ScheduleEntity> map = getScheduledItem(scheduleEntity);
+        if (!map.isEmpty()) {
+            ScheduledFuture scheduledFuture = map.keySet().iterator().next();
+            if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.REMOVE.ordinal()) {
+                ScheduleEntity value = map.values().iterator().next();
+                scheduleDateMap.remove(scheduledFuture);
+                scheduledFuture.cancel(true);
+                poolTronickRepository.delete(value);
+            }
+            else {
+                ScheduleEntity tmp = getEntity(scheduleEntity);
+                if (tmp != null) {
+                    ScheduleEntity entity = poolTronickRepository.save(tmp);
+                    scheduleDateMap.put(scheduledFuture, entity);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     public ScheduleEntity getEntity(ScheduleEntity scheduleEntity) {
@@ -88,40 +133,52 @@ public class ThreadPoolTaskSchedulerImpl {
 
     public void restoreScheduled(List<ScheduleEntity> dateList) {
         for (ScheduleEntity entity : dateList) {
-            LocalDateTime from = DateTimeUtil.createLocalDateTime(entity.getStartDate());
-            LocalDateTime next = DateTimeUtil.createLocalDateTime(entity.getNextDate());
-            ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
-                    from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
-            scheduleDateMap.put(scheduledFuture, entity);
+            try {
+                LocalDateTime from = DateTimeUtil.createLocalDateTime(entity.getStartDate());
+                if (entity.getDuration() == StaticVariables.DurationStatus.ALWAYS.ordinal()) {
+                    LocalDateTime next = DateTimeUtil.createLocalDateTime(entity.getNextDate());
+                    ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
+                            from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
+                    scheduleDateMap.put(scheduledFuture, entity);
+                }
+                else {
+                    ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
+                    scheduleDateMap.put(scheduledFuture, entity);
+                }
+            } catch (Exception e){}
         }
     }
 
     public void removeScheduledTask(ScheduleEntity entity) {
-        for (Map.Entry<ScheduledFuture, ScheduleEntity> item : scheduleDateMap.entrySet()) {
-            ScheduledFuture key = item.getKey();
-            ScheduleEntity value = item.getValue();
-            if (value.getId() == entity.getId()) {
-                scheduleDateMap.remove(key);
-                key.cancel(true);
-                poolTronickRepository.delete(value);
-                break;
+        try {
+            for (Map.Entry<ScheduledFuture, ScheduleEntity> item : scheduleDateMap.entrySet()) {
+                ScheduledFuture key = item.getKey();
+                ScheduleEntity value = item.getValue();
+                if (value.getId() == entity.getId()) {
+                    scheduleDateMap.remove(key);
+                    key.cancel(true);
+                    poolTronickRepository.delete(value);
+                    break;
+                }
             }
-        }
-
+        } catch (Exception e) {}
     }
 
     public Map<ScheduledFuture, ScheduleEntity> getScheduledItem(ScheduleEntity scheduleEntity) {
         Map<ScheduledFuture, ScheduleEntity> map = new HashMap<>();
-        for (Map.Entry<ScheduledFuture, ScheduleEntity> entry : scheduleDateMap.entrySet()) {
-            ScheduledFuture key = entry.getKey();
-            ScheduleEntity value = entry.getValue();
-            if (value.getRelay() == scheduleEntity.getRelay() &&
-                    value.getStartDate().equals(scheduleEntity.getStartDate()) &&
-            value.getNextDate().equals(scheduleEntity.getNextDate())) {
-                map.put(key, value);
-                break;
+        try {
+            for (Map.Entry<ScheduledFuture, ScheduleEntity> entry : scheduleDateMap.entrySet()) {
+                ScheduledFuture key = entry.getKey();
+                ScheduleEntity value = entry.getValue();
+                if (value.getRelay() == scheduleEntity.getRelay() &&
+                        value.getStartDate().equals(scheduleEntity.getStartDate()) &&
+                        value.getNextDate().equals(scheduleEntity.getNextDate())) {
+                    map.put(key, value);
+                    break;
+                }
             }
-        }
+        } catch (Exception e){}
+
         return map;
     }
 
@@ -142,11 +199,11 @@ public class ThreadPoolTaskSchedulerImpl {
         @Override
         public void run() {
             if (scheduleEntity.getDuration() == StaticVariables.DurationStatus.ITERATION.ordinal()) {
+                scheduleEntity.setIterated(scheduleEntity.getIterated()+1);
                 if (scheduleEntity.getIteration() >= scheduleEntity.getIterated()) {
                     removeScheduledTask(scheduleEntity);
                     return;
                 }
-                scheduleEntity.setIterated(scheduleEntity.getIterated()+1);
                 poolTronickRepository.save(scheduleEntity);
             }
             System.out.println(LocalDateTime.now().toString());
