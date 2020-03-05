@@ -28,6 +28,7 @@ public class MapUtils {
         ptScheduleDate.setDuration(scheduleEntity.getDuration());
         ptScheduleDate.setIteration(scheduleEntity.getIteration());
         ptScheduleDate.setRelay(scheduleEntity.getRelay());
+        ptScheduleDate.setId((int) scheduleEntity.getId());
         return ptScheduleDate;
     }
 

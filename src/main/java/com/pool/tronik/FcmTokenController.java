@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("refresh")
 public class FcmTokenController {
-//produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
     public Boolean saveToken(@RequestBody PushEntity pushEntity) {
         System.out.println("Hi "+pushEntity);

@@ -7,6 +7,7 @@ import java.util.Objects;
  * Created by andreivasilevitsky on 16/06/2019.
  */
 public class PTScheduleDate implements Serializable{
+    private int id;
     private int relay;
     private int status;// off, on, remove
     private String startDate;
@@ -60,6 +61,14 @@ public class PTScheduleDate implements Serializable{
 
     public void setIteration(int iteration) {
         this.iteration = iteration;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
