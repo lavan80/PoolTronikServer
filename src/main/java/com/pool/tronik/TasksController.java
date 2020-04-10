@@ -22,7 +22,6 @@ public class TasksController {
     @RequestMapping(method = GET)
     @ResponseBody
     public List<PTScheduleDate> getTasks(@RequestParam("relay") int relay) {
-        System.out.println("TasksController relay="+relay);
         List<ScheduleEntity> entityList = poolTronickRepository.findByRelay(relay);
         List<PTScheduleDate> ptScheduleDateList = new ArrayList<>();
         for (ScheduleEntity entity : entityList) {
@@ -34,7 +33,6 @@ public class TasksController {
     @RequestMapping(value = "/delete",method = GET)
     @ResponseBody
     public Boolean deleteTasks(@RequestParam("id") int id) {
-        System.out.println("TasksController deleteTasks id="+id);
         ScheduleEntity entity = new ScheduleEntity();
         entity.setId(id);
         try {

@@ -45,8 +45,6 @@ public class ThreadPoolTaskSchedulerImpl {
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
             LocalDateTime next = DateTimeUtil.createLocalDateTime(scheduleEntity.getNextDate());
-            System.out.println("ThreadPoolTaskSchedulerImpl from = "+from.toString()+"; next = "+next.toString());
-            System.out.println("ThreadPoolTaskSchedulerImpl duration = "+DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
             ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
             ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
                     from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
@@ -61,7 +59,6 @@ public class ThreadPoolTaskSchedulerImpl {
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
             ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
-            System.out.println("scheduleOneTimeTask date = "+from.toString()+"; id="+entity.getId());
             ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
             scheduleDateMap.put(scheduledFuture, entity);
         }
@@ -170,14 +167,9 @@ public class ThreadPoolTaskSchedulerImpl {
         }
         @Override
         public void run() {
-            //************************
-            System.out.println(LocalDateTime.now().toString());
-            ScheduleEntity s = poolTronickRepository.getOne(scheduleEntity.getId());//FOT TEST ONLY
-            System.out.println("ScheduleEntity id = "+s.toString());
-            //***********************
+
             if (scheduleEntity.getDuration() == StaticVariables.DurationStatus.ITERATION.ordinal()) {
                 scheduleEntity.setIterated(scheduleEntity.getIterated()+1);
-                System.out.println("ScheduleEntity iterated = "+scheduleEntity.getIterated());
                 if (scheduleEntity.getIteration() > scheduleEntity.getIterated()) {
                     removeScheduledTask(scheduleEntity);
                     return;
@@ -208,35 +200,5 @@ public class ThreadPoolTaskSchedulerImpl {
                 removeScheduledTask(scheduleEntity);
             }
         }
-
-    }
-
-    private void test() {
-        //taskScheduler.schedule(new RunnableTask("Current Date"), new Date());
-        System.out.println("pool size = "+taskScheduler.getPoolSize()+"; prefName="+taskScheduler.getThreadNamePrefix());
-        System.out.println("hashCode = "+taskScheduler.hashCode());
-
-        ScheduledFuture scheduledFuture = taskScheduler.scheduleWithFixedDelay(new RunnableTask(null), 5000);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(20000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Thread pool size = "+taskScheduler.getPoolSize()+"; prefName="+taskScheduler.getThreadNamePrefix());
-                scheduledFuture.cancel(true);
-                System.out.println("scheduledFuture hash = "+scheduledFuture.hashCode());
-            }
-        });
-        thread.start();
-        ScheduledFuture scheduledFuture2 = taskScheduler.scheduleAtFixedRate(new RunnableTask(null), 2000);
-        System.out.println("scheduledFuture2 hash = "+scheduledFuture2.hashCode());
-        /*taskScheduler.scheduleWithFixedDelay(new RunnableTask("Current Date Fixed 1 second Delay"), new Date(), 1000);
-        taskScheduler.scheduleAtFixedRate(new RunnableTask("Fixed Rate of 2 seconds"), new Date(), 2000);
-        taskScheduler.scheduleAtFixedRate(new RunnableTask("Fixed Rate of 2 seconds"), 2000);
-        taskScheduler.schedule(new RunnableTask("Cron Trigger"), cronTrigger);
-        taskScheduler.schedule(new RunnableTask("Periodic Trigger"), periodicTrigger);*/
     }
 }

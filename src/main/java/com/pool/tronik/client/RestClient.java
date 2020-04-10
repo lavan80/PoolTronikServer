@@ -4,12 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by andreivasilevitsky on 14/06/2019.
  */
-
+@Component
 public class RestClient {
 
     private final String BASE_URL = "http://192.168.0.199/";
