@@ -16,8 +16,6 @@ public class ThreadPoolTaskSchedulerConfig {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(5);
         threadPoolTaskScheduler.setThreadNamePrefix("ThreadPoolTaskScheduler");
-        System.out.println("ThreadPoolTaskSchedulerConfig  #@#@ threadPoolTaskScheduler hash="+threadPoolTaskScheduler.hashCode());
-        System.out.println("ThreadPoolTaskSchedulerConfig  #@#@ size ="+threadPoolTaskScheduler.getPoolSize());
         return threadPoolTaskScheduler;
     }
 }

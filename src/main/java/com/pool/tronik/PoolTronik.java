@@ -23,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 @EnableScheduling
 @EnableConfigurationProperties
 @EntityScan(basePackages = {"com.pool.tronik.database"})
-@EnableAutoConfiguration
 public class PoolTronik {
     public static int threshould = 0;
     public static void main(String[] args) {

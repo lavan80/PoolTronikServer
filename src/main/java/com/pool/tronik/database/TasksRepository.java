@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PoolTronickRepository extends JpaRepository<ScheduleEntity, Long> {
+public interface TasksRepository extends JpaRepository<ScheduleEntity, Long> {
      List<ScheduleEntity> findByRelay(int relay);
 }

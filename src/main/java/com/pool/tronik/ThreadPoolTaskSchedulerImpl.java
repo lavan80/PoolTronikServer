@@ -2,7 +2,7 @@ package com.pool.tronik;
 
 import com.pool.tronik.client.RestClient;
 import com.pool.tronik.dataRequests.PTScheduleDate;
-import com.pool.tronik.database.PoolTronickRepository;
+import com.pool.tronik.database.TasksRepository;
 import com.pool.tronik.database.ScheduleEntity;
 import com.pool.tronik.utils.*;
 import org.joda.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class ThreadPoolTaskSchedulerImpl {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
     @Autowired
-    private PoolTronickRepository poolTronickRepository;
+    private TasksRepository tasksRepository;
     @Autowired
     private RestClient restClient;
 
@@ -33,7 +33,7 @@ public class ThreadPoolTaskSchedulerImpl {
     }
     @PostConstruct
     public void init() {
-        List<ScheduleEntity> dateList = poolTronickRepository.findAll();
+        List<ScheduleEntity> dateList = tasksRepository.findAll();
         restoreScheduled(dateList);
     }
 
@@ -45,7 +45,7 @@ public class ThreadPoolTaskSchedulerImpl {
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
             LocalDateTime next = DateTimeUtil.createLocalDateTime(scheduleEntity.getNextDate());
-            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduleEntity entity = tasksRepository.save(scheduleEntity);
             ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
                     from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
             scheduleDateMap.put(scheduledFuture, entity);
@@ -58,7 +58,7 @@ public class ThreadPoolTaskSchedulerImpl {
             return;
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
-            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduleEntity entity = tasksRepository.save(scheduleEntity);
             ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
             scheduleDateMap.put(scheduledFuture, entity);
         }
@@ -72,12 +72,12 @@ public class ThreadPoolTaskSchedulerImpl {
                 ScheduleEntity value = map.values().iterator().next();
                 scheduleDateMap.remove(scheduledFuture);
                 scheduledFuture.cancel(true);
-                poolTronickRepository.delete(value);
+                tasksRepository.delete(value);
             }
             else {
                 ScheduleEntity tmp = getEntity(scheduleEntity);
                 if (tmp != null) {
-                    ScheduleEntity entity = poolTronickRepository.save(tmp);
+                    ScheduleEntity entity = tasksRepository.save(tmp);
                     scheduleDateMap.put(scheduledFuture, entity);
                 }
             }
@@ -126,7 +126,7 @@ public class ThreadPoolTaskSchedulerImpl {
                 if (value.getId() == entity.getId()) {
                     scheduleDateMap.remove(key);
                     key.cancel(true);
-                    poolTronickRepository.delete(value);
+                    tasksRepository.delete(value);
                     break;
                 }
             }
@@ -178,7 +178,7 @@ public class ThreadPoolTaskSchedulerImpl {
                     removeScheduledTask(scheduleEntity);
                 }
                 else {
-                    poolTronickRepository.save(scheduleEntity);
+                    tasksRepository.save(scheduleEntity);
                 }
             }
 
