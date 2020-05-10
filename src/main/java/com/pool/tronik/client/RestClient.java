@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class RestClient {
 
-    private final String BASE_URL = "http://192.168.0.199/";
+    private final String BASE_URL = "http://192.168.252.59/";
 
     @Autowired
     private RestTemplate restTemplate;
