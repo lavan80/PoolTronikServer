@@ -1,5 +1,6 @@
 package com.pool.tronik.database;
 
+import com.pool.tronik.database.util.ControllerKind;
 import com.pool.tronik.database.util.ControllerType;
 import org.hibernate.annotations.Proxy;
 
@@ -15,6 +16,7 @@ public class ControllerEntity {
     private long id;
     private String controllerIp;
     private int controllerType = ControllerType.WEB_RELAY.ordinal();//currently the switcher only
+    private int controllerKind = ControllerKind.POOL.ordinal();//what is connected in
 
     public String getControllerIp() {
         return controllerIp;
@@ -38,5 +40,13 @@ public class ControllerEntity {
 
     public void setControllerType(int controllerType) {
         this.controllerType = controllerType;
+    }
+
+    public int getControllerKind() {
+        return controllerKind;
+    }
+
+    public void setControllerKind(int controllerKind) {
+        this.controllerKind = controllerKind;
     }
 }
