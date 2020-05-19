@@ -14,8 +14,11 @@ public class ControllerEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "long")
     private long id;
+    @Column(name="controllerip")
     private String controllerIp;
+    @Column(name="controllertype")
     private int controllerType = ControllerType.WEB_RELAY.ordinal();//currently the switcher only
+    @Column(name="controllerkind")
     private int controllerKind = ControllerKind.POOL.ordinal();//what is connected in
 
     public String getControllerIp() {

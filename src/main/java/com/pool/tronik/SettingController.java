@@ -43,19 +43,26 @@ public class SettingController {
     @PostMapping(value = "/update", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> updateIp(@RequestBody ControllerEntity controllerEntity) {
         try {
-            ControllerEntity entity = controllerRepository.findByControllerKind(controllerEntity.getControllerKind());
-            if (entity == null)
+            if (controllerEntity.getControllerIp() == null) {
                 return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
-            
-            if (entity.getControllerIp() != null && entity.getControllerIp())
-             entity = controllerRepository.updateByControllerKind(controllerEntity.getControllerKind());
-             if (entity == null)
-                 new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            ControllerEntity entity = controllerRepository.findByControllerKind(controllerEntity.getControllerKind());
+            if (entity == null) {
+                entity = controllerRepository.save(controllerEntity);
+                if (entity == null)
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            else {
+                int id = controllerRepository.
+                            updateByControllerKind(controllerEntity.getControllerIp(), controllerEntity.getControllerKind());
+                if (id == -1) {
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<>(HttpStatus.OK);
     }
     /*@RequestMapping(method = GET)
