@@ -27,7 +27,6 @@ public class TasksController {
         for (ScheduleEntity entity : entityList) {
             ptScheduleDateList.add(MapUtils.mapToPTScheduleDate(entity));
         }
-        System.out.println("TasksController relay="+ptScheduleDateList.size());
         return ptScheduleDateList;
     }
     @RequestMapping(value = "/delete",method = GET)
@@ -39,8 +38,11 @@ public class TasksController {
             entity = poolTronickRepository.getOne(entity.getId());
             if (entity != null)
                 poolTronickRepository.delete(entity);
+            else
+                return false;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
         return  true;
     }
