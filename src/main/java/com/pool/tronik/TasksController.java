@@ -1,7 +1,7 @@
 package com.pool.tronik;
 
 import com.pool.tronik.dataRequests.PTScheduleDate;
-import com.pool.tronik.database.PoolTronickRepository;
+import com.pool.tronik.database.TasksRepository;
 import com.pool.tronik.database.ScheduleEntity;
 import com.pool.tronik.utils.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +17,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @RequestMapping("/tasks")
 public class TasksController {
     @Autowired
-    private PoolTronickRepository poolTronickRepository;
+    private TasksRepository tasksRepository;
 
     @RequestMapping(method = GET)
     @ResponseBody
     public List<PTScheduleDate> getTasks(@RequestParam("relay") int relay) {
-        List<ScheduleEntity> entityList = poolTronickRepository.findByRelay(relay);
+        List<ScheduleEntity> entityList = tasksRepository.findByRelay(relay);
         List<PTScheduleDate> ptScheduleDateList = new ArrayList<>();
         for (ScheduleEntity entity : entityList) {
             ptScheduleDateList.add(MapUtils.mapToPTScheduleDate(entity));
@@ -35,11 +35,9 @@ public class TasksController {
         ScheduleEntity entity = new ScheduleEntity();
         entity.setId(id);
         try {
-            entity = poolTronickRepository.getOne(entity.getId());
+            entity = tasksRepository.getOne(entity.getId());
             if (entity != null)
-                poolTronickRepository.delete(entity);
-            else
-                return false;
+                tasksRepository.delete(entity);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

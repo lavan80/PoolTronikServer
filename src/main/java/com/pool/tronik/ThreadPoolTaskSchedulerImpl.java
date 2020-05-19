@@ -2,8 +2,11 @@ package com.pool.tronik;
 
 import com.pool.tronik.client.RestClient;
 import com.pool.tronik.dataRequests.PTScheduleDate;
-import com.pool.tronik.database.PoolTronickRepository;
+import com.pool.tronik.database.ControllerEntity;
+import com.pool.tronik.database.ControllerRepository;
+import com.pool.tronik.database.TasksRepository;
 import com.pool.tronik.database.ScheduleEntity;
+import com.pool.tronik.database.util.ControllerKind;
 import com.pool.tronik.utils.*;
 import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,11 @@ public class ThreadPoolTaskSchedulerImpl {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
     @Autowired
-    private PoolTronickRepository poolTronickRepository;
+    private TasksRepository tasksRepository;
     @Autowired
     private RestClient restClient;
+    @Autowired
+    private ControllerRepository controllerRepository;
 
     private Map<ScheduledFuture, ScheduleEntity> scheduleDateMap;
 
@@ -33,7 +38,7 @@ public class ThreadPoolTaskSchedulerImpl {
     }
     @PostConstruct
     public void init() {
-        List<ScheduleEntity> dateList = poolTronickRepository.findAll();
+        List<ScheduleEntity> dateList = tasksRepository.findAll();
         restoreScheduled(dateList);
     }
 
@@ -45,7 +50,7 @@ public class ThreadPoolTaskSchedulerImpl {
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
             LocalDateTime next = DateTimeUtil.createLocalDateTime(scheduleEntity.getNextDate());
-            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduleEntity entity = tasksRepository.save(scheduleEntity);
             ScheduledFuture scheduledFuture = taskScheduler.scheduleAtFixedRate(new RunnableTask(entity),
                     from.toDate(), DateTimeUtil.getDurationMillisBetweenTwoDate(from, next));
             scheduleDateMap.put(scheduledFuture, entity);
@@ -58,7 +63,7 @@ public class ThreadPoolTaskSchedulerImpl {
             return;
         if (!handleExistsTask(scheduleEntity)) {
             LocalDateTime from = DateTimeUtil.createLocalDateTime(scheduleEntity.getStartDate());
-            ScheduleEntity entity = poolTronickRepository.save(scheduleEntity);
+            ScheduleEntity entity = tasksRepository.save(scheduleEntity);
             ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
             scheduleDateMap.put(scheduledFuture, entity);
         }
@@ -72,12 +77,12 @@ public class ThreadPoolTaskSchedulerImpl {
                 ScheduleEntity value = map.values().iterator().next();
                 scheduleDateMap.remove(scheduledFuture);
                 scheduledFuture.cancel(true);
-                poolTronickRepository.delete(value);
+                tasksRepository.delete(value);
             }
             else {
                 ScheduleEntity tmp = getEntity(scheduleEntity);
                 if (tmp != null) {
-                    ScheduleEntity entity = poolTronickRepository.save(tmp);
+                    ScheduleEntity entity = tasksRepository.save(tmp);
                     scheduleDateMap.put(scheduledFuture, entity);
                 }
             }
@@ -126,7 +131,7 @@ public class ThreadPoolTaskSchedulerImpl {
                 if (value.getId() == entity.getId()) {
                     scheduleDateMap.remove(key);
                     key.cancel(true);
-                    poolTronickRepository.delete(value);
+                    tasksRepository.delete(value);
                     break;
                 }
             }
@@ -178,7 +183,7 @@ public class ThreadPoolTaskSchedulerImpl {
                     removeScheduledTask(scheduleEntity);
                 }
                 else {
-                    poolTronickRepository.save(scheduleEntity);
+                    tasksRepository.save(scheduleEntity);
                 }
             }
 
@@ -186,19 +191,32 @@ public class ThreadPoolTaskSchedulerImpl {
                 RelayConfig.RelayOff [] relayOffs = RelayConfig.RelayOff.values();
                 if (scheduleEntity.getRelay() >= 0 && scheduleEntity.getRelay() < relayOffs.length) {
                     String val = RelayConfig.RelayOff.values()[scheduleEntity.getRelay()].getValue();
-                    restClient.changeStatus(val);
+
+                    restClient.changeStatus(getIp(), val);
                 }
             }
             else if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.ON.ordinal()) {
                 RelayConfig.RelayOn [] relayOns = RelayConfig.RelayOn.values();
                 if (scheduleEntity.getRelay() >= 0 && scheduleEntity.getRelay() < relayOns.length) {
                     String val = RelayConfig.RelayOn.values()[scheduleEntity.getRelay()].getValue();
-                    restClient.changeStatus(val);
+                    restClient.changeStatus(getIp(), val);
                 }
             }
             else if (scheduleEntity.getStatus() == StaticVariables.ScheduleStatus.REMOVE.ordinal()){
                 removeScheduledTask(scheduleEntity);
             }
         }
+    }
+
+    /**
+     * This method must be rewritten
+     * @return
+     */
+    public String getIp() {
+        ControllerEntity ip = controllerRepository.findByControllerKind(ControllerKind.POOL.ordinal());
+        if (ip == null) {
+            return "";
+        }
+        return ip.getControllerIp()+"/";
     }
 }

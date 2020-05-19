@@ -10,6 +10,8 @@ import java.util.Objects;
 @Proxy(lazy = false) // FIX IT !!!!  lazyinitializationexception no session
 public class ScheduleEntity {
 
+    //all entity classes must have to has def constructor
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", columnDefinition = "int")
