@@ -17,10 +17,9 @@ import java.util.List;
  */
 public class FileUtil {
 
-    public static void saveToken(PushEntity pushEntity) {
-        try {
+    public static boolean saveToken(PushEntity pushEntity) {
+        try(RandomAccessFile randomAccessFile = new RandomAccessFile("token.txt","rw")) {
             Gson gson = new Gson();
-            RandomAccessFile randomAccessFile = new RandomAccessFile("token.txt","rw");
             Type listType = new TypeToken<List<PushEntity>>() {}.getType();
             String json = randomAccessFile.readLine();
             List<PushEntity> entityList = null;
@@ -43,11 +42,10 @@ public class FileUtil {
             json = gson.toJson(entityList,listType);
             randomAccessFile.setLength(0);
             randomAccessFile.write(json.getBytes());
-            randomAccessFile.close();
-        } catch (FileNotFoundException e) {
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
     }
 

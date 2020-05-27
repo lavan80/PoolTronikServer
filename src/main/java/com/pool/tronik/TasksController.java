@@ -18,6 +18,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 public class TasksController {
     @Autowired
     private TasksRepository tasksRepository;
+    @Autowired
+    ThreadPoolTaskSchedulerImpl threadPoolTaskScheduler;
 
     @RequestMapping(method = GET)
     @ResponseBody
@@ -36,8 +38,10 @@ public class TasksController {
         entity.setId(id);
         try {
             entity = tasksRepository.getOne(entity.getId());
-            if (entity != null)
+            if (entity != null) {
                 tasksRepository.delete(entity);
+                threadPoolTaskScheduler.removeScheduledTask(entity);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;

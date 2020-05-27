@@ -1,6 +1,7 @@
 package com.pool.tronik;
 
 import com.pool.tronik.dataRequests.PushEntity;
+import com.pool.tronik.utils.FileUtil;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +18,6 @@ public class FcmTokenController {
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
     public Boolean saveToken(@RequestBody PushEntity pushEntity) {
         System.out.println("Hi "+pushEntity);
-        //FileUtil.saveToken(pushEntity);
-        return true;
+        return FileUtil.saveToken(pushEntity);
     }
 }

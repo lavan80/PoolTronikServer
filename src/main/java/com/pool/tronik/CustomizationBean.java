@@ -21,7 +21,7 @@ public class CustomizationBean implements
             mSystemIPAddress.enumerateAllNetInterface();
             InetAddress inetAddress = mSystemIPAddress.getSystemIP();
 
-            configurableServletWebServerFactory.setAddress(inetAddress);
+            //configurableServletWebServerFactory.setAddress(inetAddress);
             System.out.println("Your IP address : " + inetAddress);
         } catch (Exception e){
             e.printStackTrace();

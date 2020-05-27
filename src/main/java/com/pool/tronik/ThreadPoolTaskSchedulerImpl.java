@@ -119,11 +119,13 @@ public class ThreadPoolTaskSchedulerImpl {
                     ScheduledFuture scheduledFuture = taskScheduler.schedule(new RunnableTask(entity), from.toDate());
                     scheduleDateMap.put(scheduledFuture, entity);
                 }
-            } catch (Exception e){}
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
-    public void removeScheduledTask(ScheduleEntity entity) {
+    public synchronized void removeScheduledTask(ScheduleEntity entity) {
         try {
             for (Map.Entry<ScheduledFuture, ScheduleEntity> item : scheduleDateMap.entrySet()) {
                 ScheduledFuture key = item.getKey();
@@ -135,7 +137,9 @@ public class ThreadPoolTaskSchedulerImpl {
                     break;
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<ScheduledFuture, ScheduleEntity> getScheduledItem(ScheduleEntity scheduleEntity) {
@@ -151,7 +155,9 @@ public class ThreadPoolTaskSchedulerImpl {
                     break;
                 }
             }
-        } catch (Exception e){}
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
         return map;
     }
