@@ -62,4 +62,12 @@ public class DateTimeUtil {
         }
         return nextDateList;
     }
+    public static boolean isBeforeNow(String localDateTime) {
+        return isBeforeNow(new LocalDateTime(localDateTime));
+    }
+
+    public static boolean isBeforeNow(LocalDateTime localDateTime) {
+        LocalDateTime now = LocalDateTime.now();
+        return localDateTime.isBefore(now);
+    }
 }

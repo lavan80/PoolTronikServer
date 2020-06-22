@@ -26,18 +26,28 @@ public class MSchedulerController {
         try {
             if (ptScheduleDateClient.getNextDates().isEmpty()) {
                 PTScheduleDate ptScheduleDate = MapUtils.mapToPTScheduleDate(ptScheduleDateClient, "");
-                ptScheduleDate.setDuration(StaticVariables.DurationStatus.ITERATION.ordinal());
-                ptScheduleDate.setIteration(1);
-                if (ptScheduleDate != null)
-                    threadPoolTaskScheduler.scheduleOneTimeTask(ptScheduleDate);
+                if (ptScheduleDate == null)
+                    return false;//TODO : set global exception handler
+                scheduleIteration(ptScheduleDate, 1);
+                threadPoolTaskScheduler.scheduleOneTimeTask(ptScheduleDate);
             } else {
                 LocalDateTime localDateTime = DateTimeUtil.createLocalDateTime(ptScheduleDateClient.getStartDate());
                 localDateTime = localDateTime.plusWeeks(1);
-                PTScheduleDate ptScheduleDate = MapUtils.mapToPTScheduleDate(ptScheduleDateClient, localDateTime.toString());
-                threadPoolTaskScheduler.scheduleRunnableAtFixedRate(ptScheduleDate);
+                PTScheduleDate ptStartDate = MapUtils.mapToPTScheduleDate(ptScheduleDateClient, localDateTime.toString());
+                boolean isBefore = DateTimeUtil.isBeforeNow(ptStartDate.getStartDate());
+                if (!isBefore) {
+                    if (ptScheduleDateClient.getNextDates().contains(ptStartDate.getNextDate()))
+                        threadPoolTaskScheduler.scheduleRunnableAtFixedRate(ptStartDate);
+                    else {
+                        scheduleIteration(ptStartDate, 1);
+                        threadPoolTaskScheduler.scheduleOneTimeTask(ptStartDate);
+                    }
+                }
 
                 for (String date : ptScheduleDateClient.getNextDates()) {
-                    ptScheduleDate = MapUtils.mapToPTScheduleDate(ptScheduleDateClient, "");
+                    if (ptStartDate.getNextDate().equalsIgnoreCase(date) && !isBefore)
+                        continue;
+                    PTScheduleDate ptScheduleDate = MapUtils.mapToPTScheduleDate(ptScheduleDateClient, "");
                     if (ptScheduleDate != null) {
                         createPTScheduleDate(ptScheduleDate, date, 1);
                         threadPoolTaskScheduler.scheduleRunnableAtFixedRate(ptScheduleDate);
@@ -56,5 +66,10 @@ public class MSchedulerController {
         LocalDateTime next = start.plusWeeks(additionalWeek);
         ptScheduleDate.setStartDate(start.toString());
         ptScheduleDate.setNextDate(next.toString());
+    }
+
+    public void scheduleIteration(PTScheduleDate ptScheduleDate, int iteration) {
+        ptScheduleDate.setDuration(StaticVariables.DurationStatus.ITERATION.ordinal());
+        ptScheduleDate.setIteration(iteration);
     }
 }
